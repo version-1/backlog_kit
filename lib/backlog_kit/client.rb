@@ -64,7 +64,7 @@ module BacklogKit
     # @option options [String] :refresh_token Backlog OAuth refresh token
     def initialize(options = {})
       @space_id         = ENV['BACKLOG_SPACE_ID']
-      @top_level_domain = ENV['BACKLOG_TOP_LEVEL_DOMAIN'] || 'jp'
+      @top_level_domain = ENV['BACKLOG_TOP_LEVEL_DOMAIN'] || 'com'
       @api_key          = ENV['BACKLOG_API_KEY']
       @client_id        = ENV['BACKLOG_OAUTH_CLIENT_ID']
       @client_secret    = ENV['BACKLOG_OAUTH_CLIENT_SECRET']
@@ -134,7 +134,7 @@ module BacklogKit
 
     def request(method, path, params = {}, raw_params = false)
       params.camelize_keys! unless raw_params
-      faraday_response = connection.send(method, request_path(path), params)
+      faraday_response = connection.send(method, request_url(path), params)
       BacklogKit::Response.new(faraday_response)
     rescue Faraday::ConnectionFailed => e
       raise BacklogKit::Error, "#{BacklogKit::ConnectionError.name.demodulize} - #{e.message}"
@@ -163,6 +163,10 @@ module BacklogKit
 
     def oauth_request?
       !@api_key && @access_token
+    end
+
+    def request_url(path)
+      host + request_path(path)
     end
 
     def request_path(path)
